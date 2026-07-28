@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-skylight: #F0F6FC;
+  --color-cloud: #FBFDFF;
+  --color-mist: #E4EEF9;
+  --color-line: #D6E4F0;
+  --color-ink: #1B2A3D;
+  --color-muted: #5B7089;
+  --color-accent: #2C5AA0;
+  --color-accentsoft: #EAF1FB;
+  --color-glow: #8FB8E8;
+  --color-night: #0B1330;
+  --color-nightdeep: #050A1F;
+
+  --font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.bg-sky-light {
+  background: linear-gradient(180deg, #F0F6FC 0%, #FBFDFF 60%);
+}
+.bg-sky-night {
+  background: linear-gradient(180deg, #050A1F 0%, #1E3A73 100%);
+}
