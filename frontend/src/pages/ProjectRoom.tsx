@@ -19,6 +19,7 @@ export default function ProjectRoom() {
   const [showMembers, setShowMembers] = useState(false);
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
+  const [assigneeFilter, setAssigneeFilter] = useState<string>("all"); // "all" | "me" | a user id
 
   const { user } = useAuth();
   const myMembership = project?.members?.find((m: any) => m.user.id === user?.id);
@@ -72,6 +73,15 @@ export default function ProjectRoom() {
     () => project?.tasks?.find((t: any) => t.id === selectedTaskId) || null,
     [project, selectedTaskId]
     );
+  
+  const filteredTasks = useMemo(() => {
+    if (!project) return [];
+    if (assigneeFilter === "all") return project.tasks;
+    if (assigneeFilter === "me") {
+      return project.tasks.filter((t: any) => !t.assignee || t.assignee.id === user?.id);
+    }
+    return project.tasks.filter((t: any) => t.assignee?.id === assigneeFilter);
+  }, [project, assigneeFilter, user]);
 
   if (!project) {
     return <div className="min-h-screen bg-sky-light flex items-center justify-center text-muted">Opening room…</div>;
@@ -111,6 +121,21 @@ export default function ProjectRoom() {
           <p className="font-serif text-lg text-ink">{project.name}</p>
         </div>
         <div className="flex items-center gap-3">
+          <select
+            value={assigneeFilter}
+            onChange={(e) => setAssigneeFilter(e.target.value)}
+            className="text-xs border border-line rounded-full px-3 py-1.5 bg-white text-muted outline-none focus:border-accent"
+          >
+            <option value="all">All tasks</option>
+            <option value="me">Assigned to me</option>
+            {project.members
+              ?.filter((m: any) => m.user.id !== user?.id)
+              .map((m: any) => (
+                <option key={m.user.id} value={m.user.id}>
+                  {m.user.name}
+                </option>
+              ))}
+          </select>
           <p className="text-xs text-muted">{online.length} online</p>
           <button
             onClick={() => setShowMembers((s) => !s)}
@@ -171,7 +196,10 @@ export default function ProjectRoom() {
             />
           </form>
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {project.tasks.map((task: any) => (
+            {filteredTasks.length === 0 && (
+              <p className="px-1 text-xs text-muted">No tasks match this filter.</p>
+            )}
+            {filteredTasks.map((task: any) => (
               <TaskCard
                 key={task.id}
                 task={task}
@@ -182,7 +210,7 @@ export default function ProjectRoom() {
                 onAssigneeChange={(assigneeId) => api.updateTask(task.id, { assigneeId: assigneeId || null })}
                 onDeadlineChange={(deadline) => api.updateTask(task.id, { deadline: deadline || null })}
                 onDelete={() => api.deleteTask(task.id)}
-            />
+              />
             ))}
           </div>
         </div>

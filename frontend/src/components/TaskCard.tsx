@@ -95,7 +95,7 @@ export default function TaskCard({
           onChange={(e) => onAssigneeChange(e.target.value)}
           className="text-xs border border-line rounded-full px-2 py-1 bg-white text-muted outline-none focus:border-accent"
         >
-          <option value="">Unassigned</option>
+          <option value="">All</option>
           {members.map((m) => (
             <option key={m.user.id} value={m.user.id}>
               {m.user.name}
