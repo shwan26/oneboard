@@ -55,17 +55,12 @@ router.get("/:id", async (req, res) => {
   const project = await prisma.project.findUnique({
     where: { id: req.params.id },
     include: {
-      members: {
-        include: { user: { select: { id: true, name: true, email: true } } },
-      },
+      members: { include: { user: { select: { id: true, name: true } } } },
       tasks: {
         include: {
-          comments: {
-            include: { user: { select: { id: true, name: true } } },
-            orderBy: { createdAt: "asc" },
-          },
+          assignee: { select: { id: true, name: true } },
+          comments: { include: { user: { select: { id: true, name: true } } } },
         },
-        orderBy: { createdAt: "asc" },
       },
     },
   });

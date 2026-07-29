@@ -21,6 +21,7 @@ export default function ProjectRoom() {
   const [showSettings, setShowSettings] = useState(false);
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all"); // "all" | "me" | a user id
 
+  const [unreadTaskIds, setUnreadTaskIds] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const myMembership = project?.members?.find((m: any) => m.user.id === user?.id);
   const isOwner = myMembership?.role === "owner";
@@ -50,6 +51,12 @@ export default function ProjectRoom() {
           ? { ...p, tasks: p.tasks.map((t: any) => t.id === taskId ? { ...t, comments: [...t.comments, comment] } : t) }
           : p
       );
+      setSelectedTaskId((current) => {
+        if (current !== taskId) {
+          setUnreadTaskIds((prev) => new Set(prev).add(taskId));
+        }
+        return current;
+      });
     });
 
     socket.on("task:deleted", ({ id: taskId }: { id: string }) => {
@@ -205,7 +212,14 @@ export default function ProjectRoom() {
                 task={task}
                 members={project.members}
                 selected={task.id === selectedTaskId}
-                onSelect={() => setSelectedTaskId(task.id)}
+                onSelect={() => {
+                  setSelectedTaskId(task.id);
+                  setUnreadTaskIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(task.id);
+                    return next;
+                  });
+                }}
                 onStatusChange={(status) => api.updateTask(task.id, { status })}
                 onAssigneeChange={(assigneeId) => api.updateTask(task.id, { assigneeId: assigneeId || null })}
                 onDeadlineChange={(deadline) => api.updateTask(task.id, { deadline: deadline || null })}

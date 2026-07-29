@@ -13,6 +13,14 @@ async function assertMember(userId, projectId) {
   });
 }
 
+async function logSystemComment(taskId, userId, body) {
+  const comment = await prisma.comment.create({
+    data: { taskId, userId, body, system: true },
+    include: { user: { select: { id: true, name: true } } },
+  });
+  return comment;
+}
+
 // helper
 function toDateOrNull(value) {
   if (value === undefined) return undefined; // don't touch the field if not sent
@@ -37,13 +45,18 @@ router.post("/", async (req, res) => {
       projectId,
       title,
       description,
-      assigneeId: assigneeId || req.user.id, // default to creator if not specified
-      deadline: toDateOrNull(deadline),
+      assigneeId: assigneeId || req.user.id,
+      deadline: deadline ? toDateOrNull(deadline) : new Date(), // default to creation time if none given
     },
     include: { assignee: { select: { id: true, name: true } }, comments: true },
   });
 
-  req.app.get("io").to(`project:${projectId}`).emit("task:created", task);
+  const io = req.app.get("io");
+  io.to(`project:${projectId}`).emit("task:created", task);
+
+  const comment = await logSystemComment(task.id, req.user.id, "created this task");
+  io.to(`project:${projectId}`).emit("comment:created", { taskId: task.id, comment });
+
   res.status(201).json(task);
 });
 
@@ -56,6 +69,7 @@ router.patch("/:id", async (req, res) => {
   if (!membership) {
     return res.status(403).json({ error: "You are not a member of this project" });
   }
+
   const { title, description, status, assigneeId, deadline } = req.body;
 
   const task = await prisma.task.update({
@@ -64,7 +78,44 @@ router.patch("/:id", async (req, res) => {
     include: { assignee: { select: { id: true, name: true } } },
   });
 
-  req.app.get("io").to(`project:${existing.projectId}`).emit("task:updated", task);
+  const io = req.app.get("io");
+  io.to(`project:${existing.projectId}`).emit("task:updated", task);
+
+  // Build human-readable log lines for whatever actually changed
+  const messages = [];
+
+  if (status !== undefined && status !== existing.status) {
+    const labels = { todo: "To do", doing: "In progress", done: "Done" };
+    messages.push(`changed status to ${labels[status] || status}`);
+  }
+
+  if (assigneeId !== undefined && assigneeId !== existing.assigneeId) {
+    if (!assigneeId) {
+      messages.push("unassigned this task");
+    } else {
+      const newAssignee = await prisma.user.findUnique({ where: { id: assigneeId }, select: { name: true } });
+      messages.push(`assigned this to ${newAssignee?.name || "someone"}`);
+    }
+  }
+
+  const newDeadline = toDateOrNull(deadline);
+  const existingDeadline = existing.deadline ? existing.deadline.toISOString() : null;
+  const incomingDeadline = newDeadline ? newDeadline.toISOString() : null;
+  if (deadline !== undefined && incomingDeadline !== existingDeadline) {
+    messages.push(
+      newDeadline ? `set the deadline to ${newDeadline.toISOString().slice(0, 10)}` : "cleared the deadline"
+    );
+  }
+
+  if (title !== undefined && title !== existing.title) {
+    messages.push("updated the title");
+  }
+
+  for (const body of messages) {
+    const comment = await logSystemComment(task.id, req.user.id, body);
+    io.to(`project:${existing.projectId}`).emit("comment:created", { taskId: task.id, comment });
+  }
+
   res.json(task);
 });
 

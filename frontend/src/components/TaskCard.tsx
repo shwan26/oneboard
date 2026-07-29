@@ -29,6 +29,7 @@ export default function TaskCard({
   task,
   members,
   selected,
+  hasUnread,
   onSelect,
   onStatusChange,
   onAssigneeChange,
@@ -38,6 +39,7 @@ export default function TaskCard({
   task: Task;
   members: Membership[];
   selected: boolean;
+  hasUnread?: boolean;
   onSelect: () => void;
   onStatusChange: (status: Task["status"]) => void;
   onAssigneeChange: (assigneeId: string) => void;
@@ -58,6 +60,9 @@ export default function TaskCard({
         selected ? "border-accent bg-white shadow-sm" : "border-line bg-cloud hover:border-accent/40"
       }`}
     >
+      {hasUnread && (
+        <span className="absolute -top-1 -left-1 h-2.5 w-2.5 rounded-full bg-accent" />
+      )}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-ink">{task.title}</p>
         <div className="flex items-center gap-1.5 shrink-0">

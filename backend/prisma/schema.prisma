@@ -71,8 +71,9 @@ model Comment {
   taskId    String
   userId    String
   body      String
+  system    Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  task      Task     @relation(fields: [taskId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
