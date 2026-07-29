@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth";
 import NotificationBell from "../components/NotificationBell";
+import ProfileSettings from "../components/ProfileSettings";
 
 interface Project {
   id: string;
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showProfile, setShowProfile] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -41,6 +43,16 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
+            <button
+              onClick={() => setShowProfile(true)}
+              className="flex min-h-10 items-center gap-2 rounded-full border border-line bg-white px-3 text-sm text-muted transition hover:border-accent hover:text-ink"
+              title="Profile settings"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accentsoft text-xs font-semibold text-accent">
+                {user?.name?.charAt(0).toUpperCase()}
+              </span>
+              <span className="hidden sm:inline">Profile</span>
+            </button>
             <button onClick={logout} className="text-sm text-muted hover:text-ink">
               Sign out
             </button>
@@ -78,6 +90,7 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+      {showProfile && <ProfileSettings onClose={() => setShowProfile(false)} />}
     </div>
   );
 }

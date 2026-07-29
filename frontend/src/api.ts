@@ -28,6 +28,15 @@ export const api = {
     request("/auth/register", { method: "POST", body: JSON.stringify({ name, email, password }) }),
   login: (email: string, password: string) =>
     request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  updateProfile: (name: string) =>
+    request("/auth/me", { method: "PATCH", body: JSON.stringify({ name }) }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request("/auth/me/password", {
+      method: "PATCH",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+  deleteAccount: (password: string) =>
+    request("/auth/me", { method: "DELETE", body: JSON.stringify({ password }) }),
 
   listProjects: () => request("/projects"),
   createProject: (name: string, description?: string) =>

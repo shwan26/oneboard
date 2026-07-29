@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Build output and caches
+dist/
+**/dist/
+build/
+**/build/
+.vite/
+**/.vite/
+*.tsbuildinfo
+coverage/
+**/coverage/
+
+# Package manager artifacts
+.pnpm-store/
+**/.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated Prisma client and local databases
+backend/src/generated/prisma/
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Local tool caches
+.agents/cache/
+**/.agents/cache/
+.claude/cache/
+**/.claude/cache/
+.windsurf/cache/
+**/.windsurf/cache/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
