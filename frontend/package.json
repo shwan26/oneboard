@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "1.0.0",
-  "packageManager": "pnpm@10.34.0",
+  "packageManager": "pnpm@11.18.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,10 +15,15 @@
   "author": "",
   "license": "ISC",
   "devEngines": {
+    "runtime": {
+      "name": "node",
+      "onFail": "download",
+      "version": "24.14.0"
+    },
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.15.1",
-      "onFail": "download"
+      "onFail": "download",
+      "version": "11.18.0"
     }
   },
   "type": "module",
