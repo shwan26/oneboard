@@ -32,9 +32,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-light px-6 py-10">
+    <div className="min-h-dvh bg-sky-light px-4 py-6 sm:px-6 sm:py-10">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-6 flex items-center justify-between gap-3 sm:mb-8">
           <div>
             <p className="font-serif text-2xl text-ink">Oneboard</p>
             <p className="text-muted text-sm">Welcome back, {user?.name}</p>
@@ -47,14 +47,14 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <form onSubmit={createProject} className="flex gap-2 mb-8">
+        <form onSubmit={createProject} className="mb-8 flex flex-col gap-2 sm:flex-row">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="New room name — e.g. Launch Week"
             className="flex-1 rounded-full border border-line bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-accent focus:ring-1 focus:ring-accent"
           />
-          <button className="bg-accent text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-accent/90 transition">
+          <button className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-accent/90 sm:w-auto">
             Open room
           </button>
         </form>

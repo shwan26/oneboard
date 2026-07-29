@@ -56,7 +56,7 @@ export default function NotificationBell() {
       <button
         onClick={() => setOpen((o) => !o)}
         title="Notifications"
-        className="relative rounded-full border border-line bg-white p-1.5 text-muted hover:text-ink hover:border-accent transition"
+        className="relative flex min-h-10 min-w-10 items-center justify-center rounded-full border border-line bg-white text-muted transition hover:border-accent hover:text-ink sm:min-h-0 sm:min-w-0 sm:p-1.5"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
@@ -70,7 +70,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto rounded-lg border border-line bg-white shadow-lg z-20">
+        <div className="fixed left-3 right-3 top-28 z-50 max-h-[60dvh] overflow-y-auto rounded-lg border border-line bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-72 sm:max-h-96">
           {notifications.length === 0 ? (
             <p className="px-3 py-4 text-xs text-muted text-center">No notifications yet.</p>
           ) : (

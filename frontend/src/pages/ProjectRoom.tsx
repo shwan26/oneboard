@@ -139,17 +139,18 @@ export default function ProjectRoom() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-sky-light">
-      <header className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-line bg-white/60 backdrop-blur">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-sm text-muted hover:text-ink">← Rooms</Link>
-          <p className="font-serif text-lg text-ink">{project.name}</p>
+    <div className="h-dvh flex flex-col overflow-hidden bg-sky-light">
+      <header className="relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-white/60 px-3 py-3 backdrop-blur sm:flex-nowrap sm:px-6 sm:py-4">
+        <div className="flex min-w-0 w-full items-center gap-3 sm:w-auto sm:gap-4">
+          <Link to="/dashboard" className="shrink-0 text-sm text-muted hover:text-ink">← Rooms</Link>
+          <p className="truncate font-serif text-lg text-ink">{project.name}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
           <select
             value={assigneeFilter}
             onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="text-xs border border-line rounded-full px-3 py-1.5 bg-white text-muted outline-none focus:border-accent"
+            aria-label="Filter tasks by assignee"
+            className="min-w-0 flex-1 rounded-full border border-line bg-white px-3 py-2 text-xs text-muted outline-none focus:border-accent sm:flex-none"
           >
             <option value="all">All tasks</option>
             <option value="me">Assigned to me</option>
@@ -161,12 +162,12 @@ export default function ProjectRoom() {
                 </option>
               ))}
           </select>
-          <p className="text-xs text-muted">{online.length} online</p>
+          <p className="hidden whitespace-nowrap text-xs text-muted sm:block">{online.length} online</p>
            <NotificationBell />
           <button
             onClick={() => setShowMembers((s) => !s)}
             title="Crew"
-            className="rounded-full border border-line bg-white p-1.5 text-muted hover:text-ink hover:border-accent transition"
+            className="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-line bg-white text-muted transition hover:border-accent hover:text-ink sm:min-h-0 sm:min-w-0 sm:p-1.5"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -179,7 +180,7 @@ export default function ProjectRoom() {
             <button
               onClick={() => setShowSettings((s) => !s)}
               title="Room settings"
-              className="rounded-full border border-line bg-white p-1.5 text-muted hover:text-ink hover:border-accent transition"
+              className="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-line bg-white text-muted transition hover:border-accent hover:text-ink sm:min-h-0 sm:min-w-0 sm:p-1.5"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
@@ -211,8 +212,8 @@ export default function ProjectRoom() {
 
       </header>
 
-      <div className="relative flex flex-1 overflow-hidden">
-        <div className="w-80 shrink-0 border-r border-line flex flex-col">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
+        <div className={`${selectedTaskId ? "hidden md:flex" : "flex"} w-full shrink-0 flex-col md:w-80 md:border-r md:border-line`}>
           <form onSubmit={addTask} className="p-3 border-b border-line">
             <input
               value={newTaskTitle}
@@ -231,6 +232,7 @@ export default function ProjectRoom() {
                 task={task}
                 members={project.members}
                 selected={task.id === selectedTaskId}
+                unreadCount={unreadCounts.get(task.id) || 0}
                 onSelect={() => {
                   setSelectedTaskId(task.id);
                   setUnreadCounts((prev) => {
@@ -248,18 +250,19 @@ export default function ProjectRoom() {
           </div>
         </div>
 
-        <div className="flex-1 bg-white">
+        <div className={`${selectedTaskId ? "block" : "hidden md:block"} min-w-0 flex-1 bg-white`}>
           <CommentPanel
             task={selectedTask}
             members={project.members}
             draft={draft}
             onDraftChange={setDraft}
             onSend={sendComment}
+            onBack={() => setSelectedTaskId(null)}
           />
         </div>
         {/* Crew / invite panel — only rendered when the icon is clicked */}
         {showMembers && (
-          <div className="absolute right-0 top-0 h-full w-64 border-l border-line bg-white p-4 shadow-lg">
+          <div className="absolute right-0 top-0 z-20 h-full w-full border-l border-line bg-white p-4 shadow-lg sm:w-80">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-muted uppercase tracking-wide">Crew</p>
               <button onClick={() => setShowMembers(false)} className="text-muted hover:text-ink text-sm">✕</button>

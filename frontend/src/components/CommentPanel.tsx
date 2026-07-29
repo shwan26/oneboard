@@ -38,12 +38,14 @@ export default function CommentPanel({
   draft,
   onDraftChange,
   onSend,
+  onBack,
 }: {
   task: Task | null;
   members: Membership[];
   draft: string;
   onDraftChange: (v: string) => void;
   onSend: () => void;
+  onBack?: () => void;
 }) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null); // null = not currently mentioning
 
@@ -86,11 +88,21 @@ export default function CommentPanel({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-5 py-4 border-b border-line">
-        <p className="text-sm font-medium text-ink">{task.title}</p>
+      <div className="flex min-w-0 items-center gap-3 border-b border-line px-3 py-3 sm:px-5 sm:py-4">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Back to task list"
+            className="flex min-h-10 min-w-10 items-center justify-center rounded-full border border-line text-lg text-muted hover:border-accent hover:text-ink md:hidden"
+          >
+            ←
+          </button>
+        )}
+        <p className="truncate text-sm font-medium text-ink">{task.title}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 sm:px-5">
         {task.comments.length === 0 && (
           <p className="text-sm text-muted">No updates yet — add one below.</p>
         )}
@@ -105,13 +117,13 @@ export default function CommentPanel({
                 <p className="text-xs font-medium text-ink">{c.user.name}</p>
                 <p className="text-[11px] text-muted">{timeAgo(c.createdAt)}</p>
               </div>
-              <p className="text-sm text-ink">{c.body}</p>
+              <p className="break-words text-sm text-ink">{c.body}</p>
             </div>
           )
         )}
       </div>
 
-      <div className="relative border-t border-line px-4 py-3">
+      <div className="relative border-t border-line px-3 py-3 sm:px-4">
         {mentionMatches.length > 0 && (
           <div className="absolute bottom-full left-4 mb-1 w-56 rounded-lg border border-line bg-white shadow-lg z-10">
             {mentionMatches.map((m) => (
@@ -131,11 +143,11 @@ export default function CommentPanel({
             onChange={(e) => handleDraftChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSend()}
             placeholder="Post an update… (@ to mention)"
-            className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+            className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
           />
           <button
             onClick={onSend}
-            className="bg-accent text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-accent/90"
+            className="shrink-0 rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
           >
             Send
           </button>
