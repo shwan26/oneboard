@@ -89,6 +89,7 @@ In another terminal, create `frontend/.env`:
 
 ```env
 VITE_API_URL="http://localhost:4000"
+VITE_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
 ```
 
 Install dependencies and start the development server:
@@ -140,6 +141,7 @@ pnpm exec prisma studio        # Open Prisma Studio
 | Variable | Required | Description |
 | --- | --- | --- |
 | `VITE_API_URL` | No | Backend base URL; defaults to `http://localhost:4000` |
+| `VITE_GA_MEASUREMENT_ID` | No | Google Analytics 4 measurement ID. Analytics is disabled when omitted. |
 
 ## Production build
 
@@ -150,7 +152,7 @@ cd frontend
 pnpm build
 ```
 
-For production, set `DATABASE_URL`, `JWT_SECRET`, and `CLIENT_ORIGIN` on the backend host, and set `VITE_API_URL` before building the frontend.
+For production, set `DATABASE_URL`, `JWT_SECRET`, and `CLIENT_ORIGIN` on the backend host, and set `VITE_API_URL` and `VITE_GA_MEASUREMENT_ID` before building the frontend.
 
 ## Security notes
 

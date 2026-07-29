@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProjectRoom from "./pages/ProjectRoom";
+import GoogleAnalytics from "./analytics";
 import { JSX } from "react/jsx-dev-runtime";
 
 function Protected({ children }: { children: JSX.Element }) {
@@ -28,6 +29,7 @@ function Routed() {
 export default function App() {
   return (
     <AuthProvider>
+      <GoogleAnalytics />
       <Routed />
     </AuthProvider>
   );
