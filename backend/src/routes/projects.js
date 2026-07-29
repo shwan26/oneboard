@@ -99,4 +99,29 @@ router.post("/:id/members", async (req, res) => {
   res.status(201).json(newMembership);
 });
 
+// DELETE /api/projects/:id — remove a project entirely (owner only)
+router.delete("/:id", async (req, res) => {
+  const membership = await prisma.membership.findUnique({
+    where: { userId_projectId: { userId: req.user.id, projectId: req.params.id } },
+  });
+  if (!membership) {
+    return res.status(403).json({ error: "You are not a member of this project" });
+  }
+  if (membership.role !== "owner") {
+    return res.status(403).json({ error: "Only the room owner can delete it" });
+  }
+
+  const taskIds = (
+    await prisma.task.findMany({ where: { projectId: req.params.id }, select: { id: true } })
+  ).map((t) => t.id);
+
+  await prisma.comment.deleteMany({ where: { taskId: { in: taskIds } } });
+  await prisma.task.deleteMany({ where: { projectId: req.params.id } });
+  await prisma.membership.deleteMany({ where: { projectId: req.params.id } });
+  await prisma.project.delete({ where: { id: req.params.id } });
+
+  req.app.get("io").to(`project:${req.params.id}`).emit("project:deleted", { id: req.params.id });
+  res.status(204).end();
+});
+
 export default router;

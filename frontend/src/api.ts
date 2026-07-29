@@ -44,6 +44,12 @@ export const api = {
 
   inviteMember: (projectId: string, email: string) =>
     request(`/projects/${projectId}/members`, { method: "POST", body: JSON.stringify({ email }) }),
+
+  deleteTask: (id: string) =>
+    request(`/tasks/${id}`, { method: "DELETE" }),
+
+  deleteProject: (id: string) =>
+    request(`/projects/${id}`, { method: "DELETE" }),
 };
 
 export { API_URL, getToken };

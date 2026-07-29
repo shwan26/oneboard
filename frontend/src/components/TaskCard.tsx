@@ -4,6 +4,7 @@ interface Task {
   description?: string | null;
   status: "todo" | "doing" | "done";
   deadline?: string | null;
+  assignee?: { id: string; name: string } | null;
 }
 
 interface Membership {
@@ -32,6 +33,7 @@ export default function TaskCard({
   onStatusChange,
   onAssigneeChange,
   onDeadlineChange,
+  onDelete,
 }: {
   task: Task;
   members: Membership[];
@@ -40,24 +42,44 @@ export default function TaskCard({
   onStatusChange: (status: Task["status"]) => void;
   onAssigneeChange: (assigneeId: string) => void;
   onDeadlineChange: (deadline: string) => void;
+  onDelete: () => void;
 }) {
   const isOverdue = !!task.deadline && task.status !== "done" && new Date(task.deadline) < new Date();
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className={`w-full text-left rounded-xl border px-4 py-3 transition ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onSelect();
+      }}
+      className={`w-full text-left rounded-xl border px-4 py-3 transition cursor-pointer ${
         selected ? "border-accent bg-white shadow-sm" : "border-line bg-cloud hover:border-accent/40"
       }`}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-ink">{task.title}</p>
-        <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[task.status]}`}>
-          {STATUS_LABEL[task.status]}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[task.status]}`}>
+            {STATUS_LABEL[task.status]}
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm(`Delete "${task.title}"? This can't be undone.`)) onDelete();
+            }}
+            title="Delete task"
+            className="text-muted hover:text-red-600 p-0.5"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+      <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <select
           value={task.status}
           onChange={(e) => onStatusChange(e.target.value as Task["status"])}
@@ -66,6 +88,19 @@ export default function TaskCard({
           <option value="todo">To do</option>
           <option value="doing">In progress</option>
           <option value="done">Done</option>
+        </select>
+
+        <select
+          value={(task as any).assignee?.id || ""}
+          onChange={(e) => onAssigneeChange(e.target.value)}
+          className="text-xs border border-line rounded-full px-2 py-1 bg-white text-muted outline-none focus:border-accent"
+        >
+          <option value="">Unassigned</option>
+          {members.map((m) => (
+            <option key={m.user.id} value={m.user.id}>
+              {m.user.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -80,6 +115,6 @@ export default function TaskCard({
         />
         {isOverdue && <span className="text-[10px] text-live">overdue</span>}
       </div>
-    </button>
+    </div>
   );
 }
