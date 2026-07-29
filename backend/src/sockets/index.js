@@ -33,6 +33,8 @@ export function registerSocketHandlers(io) {
   io.on("connection", (socket) => {
     let currentProjectId = null;
 
+    socket.join(`user:${socket.user.id}`); // personal room — for DMs/notifications regardless of active project
+
     // Frontend calls this after connecting, telling us which project it's viewing
     socket.on("project:join", (projectId) => {
       currentProjectId = projectId;

@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 interface Comment {
   id: string;
   taskId: string;
@@ -24,17 +26,56 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+interface Membership {
+  id: string;
+  role: string;
+  user: { id: string; name: string };
+}
+
 export default function CommentPanel({
   task,
+  members,
   draft,
   onDraftChange,
   onSend,
 }: {
   task: Task | null;
+  members: Membership[];
   draft: string;
   onDraftChange: (v: string) => void;
   onSend: () => void;
 }) {
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null); // null = not currently mentioning
+
+  const mentionMatches = useMemo(() => {
+    if (mentionQuery === null) return [];
+    return members
+      .filter((m) => m.user.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+      .slice(0, 5);
+  }, [mentionQuery, members]);
+
+  function handleDraftChange(value: string) {
+    onDraftChange(value);
+    const atIndex = value.lastIndexOf("@");
+    if (atIndex === -1) {
+      setMentionQuery(null);
+      return;
+    }
+    const afterAt = value.slice(atIndex + 1);
+    if (/\s/.test(afterAt)) {
+      setMentionQuery(null); // they've typed past the name, e.g. "@Alice hey" — stop suggesting
+    } else {
+      setMentionQuery(afterAt);
+    }
+  }
+
+  function pickMention(name: string) {
+    const atIndex = draft.lastIndexOf("@");
+    const newDraft = draft.slice(0, atIndex) + `@${name} `;
+    onDraftChange(newDraft);
+    setMentionQuery(null);
+  }
+
   if (!task) {
     return (
       <div className="h-full flex items-center justify-center text-sm text-muted">
@@ -53,7 +94,7 @@ export default function CommentPanel({
         {task.comments.length === 0 && (
           <p className="text-sm text-muted">No updates yet — add one below.</p>
         )}
-        {task.comments.map((c: any) => (
+        {task.comments.map((c: any) =>
           c.system ? (
             <p key={c.id} className="text-center text-xs text-muted italic my-2">
               {c.user.name} {c.body} · {timeAgo(c.createdAt)}
@@ -67,23 +108,38 @@ export default function CommentPanel({
               <p className="text-sm text-ink">{c.body}</p>
             </div>
           )
-        ))}
+        )}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-line px-4 py-3">
-        <input
-          value={draft}
-          onChange={(e) => onDraftChange(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onSend()}
-          placeholder="Post an update…"
-          className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
-        />
-        <button
-          onClick={onSend}
-          className="bg-accent text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-accent/90"
-        >
-          Send
-        </button>
+      <div className="relative border-t border-line px-4 py-3">
+        {mentionMatches.length > 0 && (
+          <div className="absolute bottom-full left-4 mb-1 w-56 rounded-lg border border-line bg-white shadow-lg z-10">
+            {mentionMatches.map((m) => (
+              <button
+                key={m.user.id}
+                onClick={() => pickMention(m.user.name)}
+                className="w-full text-left px-3 py-1.5 text-xs text-ink hover:bg-mist first:rounded-t-lg last:rounded-b-lg"
+              >
+                @{m.user.name}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <input
+            value={draft}
+            onChange={(e) => handleDraftChange(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSend()}
+            placeholder="Post an update… (@ to mention)"
+            className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+          />
+          <button
+            onClick={onSend}
+            className="bg-accent text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-accent/90"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -50,6 +50,10 @@ export const api = {
 
   deleteProject: (id: string) =>
     request(`/projects/${id}`, { method: "DELETE" }),
+
+  getNotifications: () => request(`/notifications`),
+  markNotificationRead: (id: string) =>
+    request(`/notifications/${id}`, { method: "PATCH" }),
 };
 
 export { API_URL, getToken };

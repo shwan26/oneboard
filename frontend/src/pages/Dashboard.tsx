@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth";
+import NotificationBell from "../components/NotificationBell";
 
 interface Project {
   id: string;
@@ -38,9 +39,12 @@ export default function Dashboard() {
             <p className="font-serif text-2xl text-ink">Oneboard</p>
             <p className="text-muted text-sm">Welcome back, {user?.name}</p>
           </div>
-          <button onClick={logout} className="text-sm text-muted hover:text-ink">
-            Sign out
-          </button>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <button onClick={logout} className="text-sm text-muted hover:text-ink">
+              Sign out
+            </button>
+          </div>
         </div>
 
         <form onSubmit={createProject} className="flex gap-2 mb-8">

@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.js";
 import projectRoutes from "./routes/projects.js";
 import taskRoutes from "./routes/tasks.js";
 import commentRoutes from "./routes/comments.js";
+import notificationRoutes from "./routes/notifications.js";
 
 import { registerSocketHandlers } from "./sockets/index.js";
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {

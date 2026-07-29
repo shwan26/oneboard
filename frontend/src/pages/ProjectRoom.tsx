@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { connectSocket } from "../socket";
 import TaskCard from "../components/TaskCard";
 import CommentPanel from "../components/CommentPanel";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth";
+import NotificationBell from "../components/NotificationBell";
 
 export default function ProjectRoom() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +21,9 @@ export default function ProjectRoom() {
   const [showSettings, setShowSettings] = useState(false);
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all"); // "all" | "me" | a user id
 
-  const [unreadTaskIds, setUnreadTaskIds] = useState<Set<string>>(new Set());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const targetTaskId = searchParams.get("task");
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   const { user } = useAuth();
   const myMembership = project?.members?.find((m: any) => m.user.id === user?.id);
   const isOwner = myMembership?.role === "owner";
@@ -53,7 +55,11 @@ export default function ProjectRoom() {
       );
       setSelectedTaskId((current) => {
         if (current !== taskId) {
-          setUnreadTaskIds((prev) => new Set(prev).add(taskId));
+          setUnreadCounts((prev) => {
+            const next = new Map(prev);
+            next.set(taskId, (next.get(taskId) || 0) + 1);
+            return next;
+          });
         }
         return current;
       });
@@ -75,6 +81,18 @@ export default function ProjectRoom() {
       socket.off("comment:created");
     };
   }, [id]);
+
+  useEffect(() => {
+    if (project && targetTaskId) {
+      setSelectedTaskId(targetTaskId);
+      setUnreadCounts((prev) => {
+        const next = new Map(prev);
+        next.delete(targetTaskId);
+        return next;
+      });
+      setSearchParams({}, { replace: true });
+    }
+  }, [project, targetTaskId]);
 
   const selectedTask = useMemo(
     () => project?.tasks?.find((t: any) => t.id === selectedTaskId) || null,
@@ -144,6 +162,7 @@ export default function ProjectRoom() {
               ))}
           </select>
           <p className="text-xs text-muted">{online.length} online</p>
+           <NotificationBell />
           <button
             onClick={() => setShowMembers((s) => !s)}
             title="Crew"
@@ -214,8 +233,8 @@ export default function ProjectRoom() {
                 selected={task.id === selectedTaskId}
                 onSelect={() => {
                   setSelectedTaskId(task.id);
-                  setUnreadTaskIds((prev) => {
-                    const next = new Set(prev);
+                  setUnreadCounts((prev) => {
+                    const next = new Map(prev);
                     next.delete(task.id);
                     return next;
                   });
@@ -230,9 +249,14 @@ export default function ProjectRoom() {
         </div>
 
         <div className="flex-1 bg-white">
-          <CommentPanel task={selectedTask} draft={draft} onDraftChange={setDraft} onSend={sendComment} />
+          <CommentPanel
+            task={selectedTask}
+            members={project.members}
+            draft={draft}
+            onDraftChange={setDraft}
+            onSend={sendComment}
+          />
         </div>
-
         {/* Crew / invite panel — only rendered when the icon is clicked */}
         {showMembers && (
           <div className="absolute right-0 top-0 h-full w-64 border-l border-line bg-white p-4 shadow-lg">

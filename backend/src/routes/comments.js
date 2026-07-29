@@ -26,7 +26,36 @@ router.post("/", async (req, res) => {
     include: { user: { select: { id: true, name: true } } },
   });
 
-  req.app.get("io").to(`project:${task.projectId}`).emit("comment:created", { taskId, comment });
+  const io = req.app.get("io");
+  io.to(`project:${task.projectId}`).emit("comment:created", { taskId, comment });
+
+  // --- Mention detection ---
+  // Match @Name where Name can include spaces, stopping at the next @ or line end.
+  // We match against actual project members' names rather than trusting arbitrary @text.
+  const members = await prisma.membership.findMany({
+    where: { projectId: task.projectId },
+    include: { user: { select: { id: true, name: true } } },
+  });
+
+  const mentionedUserIds = new Set();
+  for (const m of members) {
+    if (m.user.id === req.user.id) continue; // don't notify yourself
+    const pattern = new RegExp(`@${m.user.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    if (pattern.test(body)) mentionedUserIds.add(m.user.id);
+  }
+
+  for (const userId of mentionedUserIds) {
+    const notification = await prisma.notification.create({
+      data: {
+        userId,
+        taskId,
+        commentId: comment.id,
+        body: `${req.user.name} mentioned you in "${task.title}"`,
+      },
+    });
+    io.to(`user:${userId}`).emit("notification:new", notification);
+  }
+
   res.status(201).json(comment);
 });
 

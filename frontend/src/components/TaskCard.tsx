@@ -29,7 +29,7 @@ export default function TaskCard({
   task,
   members,
   selected,
-  hasUnread,
+  unreadCount = 0,
   onSelect,
   onStatusChange,
   onAssigneeChange,
@@ -39,7 +39,7 @@ export default function TaskCard({
   task: Task;
   members: Membership[];
   selected: boolean;
-  hasUnread?: boolean;
+  unreadCount?: number;
   onSelect: () => void;
   onStatusChange: (status: Task["status"]) => void;
   onAssigneeChange: (assigneeId: string) => void;
@@ -47,7 +47,7 @@ export default function TaskCard({
   onDelete: () => void;
 }) {
   const isOverdue = !!task.deadline && task.status !== "done" && new Date(task.deadline) < new Date();
-
+  const hasUnread = unreadCount > 0;
   return (
     <div
       role="button"
@@ -60,12 +60,14 @@ export default function TaskCard({
         selected ? "border-accent bg-white shadow-sm" : "border-line bg-cloud hover:border-accent/40"
       }`}
     >
-      {hasUnread && (
-        <span className="absolute -top-1 -left-1 h-2.5 w-2.5 rounded-full bg-accent" />
-      )}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-ink">{task.title}</p>
         <div className="flex items-center gap-1.5 shrink-0">
+          {hasUnread && (
+            <span className="bg-accent text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
           <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[task.status]}`}>
             {STATUS_LABEL[task.status]}
           </span>
@@ -84,10 +86,11 @@ export default function TaskCard({
         </div>
       </div>
 
-      <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="mt-2 flex items-center gap-2">
         <select
           value={task.status}
           onChange={(e) => onStatusChange(e.target.value as Task["status"])}
+          onClick={(e) => e.stopPropagation()}
           className="text-xs border border-line rounded-full px-2 py-1 bg-white text-muted outline-none focus:border-accent"
         >
           <option value="todo">To do</option>
@@ -96,8 +99,9 @@ export default function TaskCard({
         </select>
 
         <select
-          value={(task as any).assignee?.id || ""}
+          value={task.assignee?.id || ""}
           onChange={(e) => onAssigneeChange(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
           className="text-xs border border-line rounded-full px-2 py-1 bg-white text-muted outline-none focus:border-accent"
         >
           <option value="">All</option>
@@ -109,11 +113,12 @@ export default function TaskCard({
         </select>
       </div>
 
-      <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="mt-2 flex items-center gap-2">
         <input
           type="date"
           value={task.deadline ? task.deadline.slice(0, 10) : ""}
           onChange={(e) => onDeadlineChange(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
           className={`rounded border bg-panel2 px-1.5 py-1 font-mono-tight text-[10px] ${
             isOverdue ? "border-live text-live" : "border-line text-faint"
           }`}
