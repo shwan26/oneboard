@@ -14,18 +14,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "onFail": "download",
-      "version": "24.14.0"
-    },
-    "packageManager": {
-      "name": "pnpm",
-      "onFail": "download",
-      "version": "11.18.0"
-    }
-  },
   "type": "module",
   "dependencies": {
     "react": "^19.2.8",
