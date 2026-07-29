@@ -1,6 +1,8 @@
 {
   "name": "frontend",
+  "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@10.34.0",
   "description": "",
   "main": "index.js",
   "scripts": {
